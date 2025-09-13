@@ -16,8 +16,3 @@
 }
 
 }
-"scripts": {
-  "start": "node server.js",
-  "bot": "node bot.js",
-  "dev": "NODE_ENV=development node server.js"
-}
