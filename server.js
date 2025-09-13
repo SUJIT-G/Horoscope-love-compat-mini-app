@@ -1,11 +1,17 @@
 const express = require("express");
+const cors = require("cors");
 const path = require("path");
 
-const app = express(); // Create Express app
+const app = express();
+app.use(cors());
+
+// Health check / test route
+app.get("/", (req, res) => {
+  res.send("Daily Horoscope Mini App is running on Railway 🚀");
+});
 
 const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
 // ♈ List of valid signs
 const SIGNS = [
@@ -109,5 +115,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
 
 
