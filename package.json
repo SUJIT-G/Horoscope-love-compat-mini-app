@@ -1,40 +1,14 @@
-const express = require("express");
-const TelegramBot = require("node-telegram-bot-api");
-
-const app = express();
-
-// Env variables
-const TOKEN = process.env.BOT_TOKEN;
-const URL = process.env."url": "WEBHOOK_URL; // Railway URL
-const PORT = process.env.PORT || 3000;
-
-// Bot init (without polling)
-const bot = new TelegramBot(TOKEN, { polling: false });
-
-// Webhook path
-const webhookPath = `/webhook/${process.env.BOT_SECRET || "mysecret"}`;
-
-// Set webhook
-bot.setWebHook(`${URL}${webhookPath}`);
-
-// Express middleware for Telegram
-app.use(express.json());
-
-app.post(webhookPath, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
-
-// Sample command
-bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(msg.chat.id, "👋 Hello! Your bot is live with webhook!");
-});
-
-// Root route
-app.get("/", (req, res) => {
-  res.send("🤖 Bot running with webhook!");
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+{
+  "name": "horoscope-bot",
+  "version": "1.0.0",
+  "description": "Daily Horoscope Mini App Telegram Bot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-telegram-bot-api": "^0.61.0"
+  }
+}
