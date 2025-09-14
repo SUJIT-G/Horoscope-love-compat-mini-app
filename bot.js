@@ -3,7 +3,7 @@ const { Telegraf } = require("telegraf");
 const axios = require("axios");
 
 const bot = new Telegram(process.env.BOT_TOKEN; 
-const API_BASE = "RAILWAY_APP";
+const API_BASE = "WEBHOOK_URL";
 
 // Horoscope Command
 bot.command("horoscope", async (ctx) => {
