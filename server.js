@@ -1,120 +1,74 @@
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
+const axios = require("axios");
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
-// Health check / test route
-app.get("/", (req, res) => {
-  res.send("Daily Horoscope Mini App is running on Railway 🚀");
-});
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN; 
+const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
+const WEBHOOK_URL = process.env.WEBHOOK_URL; 
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-
-// ♈ List of valid signs
-const SIGNS = [
-  "aries", "taurus", "gemini", "cancer", "leo", "virgo",
-  "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
-];
-
-// 🔥 Elements mapping
-const ELEMENT = {
-  aries: "fire", leo: "fire", sagittarius: "fire",
-  taurus: "earth", virgo: "earth", capricorn: "earth",
-  gemini: "air", libra: "air", aquarius: "air",
-  cancer: "water", scorpio: "water", pisces: "water"
-};
-
-// Compatibility base scores between elements
-const ELEMENT_COMPAT = {
-  fire: { fire: 80, air: 70, water: 50, earth: 55 },
-  earth: { earth: 80, water: 70, air: 55, fire: 50 },
-  air: { air: 80, fire: 70, earth: 55, water: 50 },
-  water: { water: 80, earth: 70, air: 50, fire: 55 }
-};
-
-// Utility
-function randomFrom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// Horoscope generator
-function generateHoroscope(sign) {
-  const now = new Date();
-  const moods = ["lucky", "challenging", "romantic", "creative", "adventurous"];
-  const tips = [
-    "Today is good for planning.",
-    "A short walk clears your head.",
-    "Say no once if you need time."
-  ];
-
-  const mood = randomFrom(moods);
-  const lines = [];
-  lines.push(`Your mood today: ${mood}`);
-  lines.push(randomFrom(tips));
-
-  return {
-    sign,
-    generated_at: now.toISOString(),
-    mood,
-    text: lines.join(" ")
-  };
-}
-
-// ---- API ROUTES ----
-
-// Daily Horoscope
-app.get("/api/horoscope", (req, res) => {
-  const sign = (req.query.sign || "").toLowerCase();
-  if (!SIGNS.includes(sign)) {
-    return res
-      .status(400)
-      .json({ error: "Invalid or missing sign. Valid: " + SIGNS.join(", ") });
+// Set webhook (call only once after deploy)
+app.get("/set-webhook", async (req, res) => {
+  try {
+    const resp = await axios.get(
+      `${TELEGRAM_API}/setWebhook?url=${WEBHOOK_URL}/webhook`
+    );
+    res.send(resp.data);
+  } catch (err) {
+    res.send(err.message);
   }
-  const data = generateHoroscope(sign);
-  res.json(data);
 });
 
-// Love Compatibility
-app.get("/api/compatibility", (req, res) => {
-  const s1 = (req.query.sign1 || "").toLowerCase();
-  const s2 = (req.query.sign2 || "").toLowerCase();
+// ✅ Telegram webhook endpoint
+app.post("/webhook", async (req, res) => {
+  const message = req.body.message;
+  if (message && message.text) {
+    const chatId = message.chat.id;
+    const userMsg = message.text.toLowerCase().trim();
 
-  if (!SIGNS.includes(s1) || !SIGNS.includes(s2)) {
-    return res.status(400).json({
-      error: "Invalid or missing signs. Use sign1 and sign2 query params."
+    // Zodiac signs list
+    const zodiacSigns = [
+      "aries","taurus","gemini","cancer","leo","virgo",
+      "libra","scorpio","sagittarius","capricorn","aquarius","pisces"
+    ];
+
+    let reply = "🌌 Send me your zodiac sign (e.g. Aries, Taurus, Leo)...";
+
+    if (zodiacSigns.includes(userMsg)) {
+      try {
+        const apiResp = await axios.post(
+          `https://aztro.sameerkumar.website/?sign=${userMsg}&day=today`
+        );
+        const data = apiResp.data;
+
+        reply = `♈ ${userMsg.charAt(0).toUpperCase() + userMsg.slice(1)} Horoscope:\n\n`
+          + `📅 ${data.current_date}\n`
+          + `✨ ${data.description}\n\n`
+          + `💖 Compatibility: ${data.compatibility}\n`
+          + `😊 Mood: ${data.mood}\n`
+          + `🎨 Lucky Color: ${data.color}\n`
+          + `🔢 Lucky Number: ${data.lucky_number}\n`
+          + `⏰ Lucky Time: ${data.lucky_time}`;
+      } catch (error) {
+        reply = "⚠️ Sorry, horoscope API is not available right now. Try again later.";
+      }
+    }
+
+    // Send message back to Telegram
+    await axios.post(`${TELEGRAM_API}/sendMessage`, {
+      chat_id: chatId,
+      text: reply,
     });
   }
 
-  const e1 = ELEMENT[s1];
-  const e2 = ELEMENT[s2];
-  let base = ELEMENT_COMPAT[e1][e2] || 50;
-
-  // random ±5
-  const variance = Math.floor((Math.random() - 0.5) * 11);
-  const score = Math.max(0, Math.min(100, base + variance));
-
-  let desc = "";
-  if (score >= 80)
-    desc = "Excellent harmony — strong emotional & intellectual connection.";
-  else if (score >= 65)
-    desc = "Good match — plenty of shared values and understanding.";
-  else if (score >= 45)
-    desc = "Mixed compatibility — effort needed to bridge differences.";
-  else desc = "Challenging match — needs patience and compromise.";
-
-  res.json({ sign1: s1, sign2: s2, element1: e1, element2: e2, score, description: desc });
+  res.sendStatus(200);
 });
 
-// ---- Serve Frontend ----
-app.use(express.static(path.join(__dirname, "public")));
-
-// fallback to index.html
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// Server listen
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
-
-
