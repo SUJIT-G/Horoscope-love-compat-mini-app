@@ -2,7 +2,7 @@ require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const axios = require("axios");
 
-const bot = new Telegraf(process.env.8224304018:AAFfmrV2BMv67hFG1YSIBOZUgZv9sr2ch08); 
+const bot = new Telegram(process.env.8224304018:AAFfmrV2BMv67hFG1YSIBOZUgZv9sr2ch08); 
 const API_BASE = "https://horoscope-love-compat-mini-app-production.up.railway.app";
 
 // Horoscope Command
