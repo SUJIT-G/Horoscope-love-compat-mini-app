@@ -9,6 +9,7 @@ app.use(express.json());
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN; 
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 const WEBHOOK_URL = process.env.WEBHOOK_URL; 
+const apiResp = await axios.post(
 
 // Set webhook (call only once after deploy)
 app.get("/set-webhook", async (req, res) => {
@@ -43,6 +44,11 @@ app.post("/webhook", async (req, res) => {
           `https://aztro.sameerkumar.website/?sign=${userMsg}&day=today`
         );
         const data = apiResp.data;
+        const apiResp = await axios.post(
+  `https://aztro.sameerkumar.website/?sign=${userMsg}&day=today`,
+  {},
+  { timeout: 5000 }
+);
 
         reply = `♈ ${userMsg.charAt(0).toUpperCase() + userMsg.slice(1)} Horoscope:\n\n`
           + `📅 ${data.current_date}\n`
@@ -72,3 +78,4 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
