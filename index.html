@@ -1,70 +1,267 @@
+
 <!doctype html>
+
 <html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Horoscope + Love Compatibility</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:24px;background:#f7f7fb}
-.card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,50,0.06);max-width:760px;margin:auto}
-select,input,button{padding:8px 10px;margin:6px 0;border-radius:8px;border:1px solid #ddd}
-pre{white-space:pre-wrap;background:#f2f4ff;padding:12px;border-radius:8px}
+:root {
+--primary-color: #6a5acd; /* Royal Purple */
+--secondary-color: #ffb6c1; /* Light Pink */
+--text-color: #333;
+--light-text-color: #555;
+--background-color: #f7f7fb;
+--card-background: #ffffff;
+--border-color: #e0e0e0;
+--shadow-light: 0 4px 12px rgba(20,20,50,0.04);
+--shadow-medium: 0 8px 24px rgba(20,20,50,0.08);
+}
+
+
+body {
+font-family: 'Open Sans', system-ui, Segoe UI, Roboto, Arial, sans-serif;
+margin: 0;
+padding: 24px;
+background: var(--background-color);
+color: var(--text-color);
+line-height: 1.6;
+display: flex;
+justify-content: center;
+align-items: flex-start; /* Align to top on larger screens */
+min-height: 100vh;
+}
+
+.card-container {
+max-width: 960px; /* Increased max-width for better layout /
+width: 100%;
+margin: auto;
+display: flex;
+flex-wrap: wrap; / Allow cards to wrap on smaller screens */
+gap: 24px;
+}
+
+.card {
+background: var(--card-background);
+padding: 24px;
+border-radius: 16px; /* Slightly larger border-radius /
+box-shadow: var(--shadow-medium);
+flex: 1; / Allow cards to grow and shrink /
+min-width: 300px; / Minimum width before wrapping /
+box-sizing: border-box; / Include padding in element's total width and height */
+}
+
+.card h2 {
+font-family: 'Montserrat', sans-serif;
+color: var(--primary-color);
+margin-top: 0;
+margin-bottom: 20px;
+font-size: 1.8em;
+font-weight: 600;
+text-align: center;
+}
+
+select,
+input[type="date"],
+button {
+width: 100%;
+padding: 12px 15px;
+margin: 10px 0;
+border-radius: 10px; /* More rounded corners /
+border: 1px solid var(--border-color);
+background-color: #fff;
+font-size: 1em;
+color: var(--light-text-color);
+-webkit-appearance: none; / Remove default select styling */
+-moz-appearance: none;
+appearance: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+select:focus,
+input[type="date"]:focus,
+button:focus {
+outline: none;
+border-color: var(--primary-color);
+box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.2);
+}
+
+button {
+background-color: var(--primary-color);
+color: #fff;
+font-weight: 600;
+border: none;
+cursor: pointer;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+background-color: #5a4ac0; /* Darker shade on hover */
+transform: translateY(-2px);
+}
+
+button:active {
+transform: translateY(0);
+}
+
+hr {
+border: none;
+border-top: 1px dashed var(--border-color);
+margin: 30px 0;
+}
+
+.result-box {
+background: #f2f4ff; /* Lighter background for results /
+padding: 18px;
+border-radius: 12px;
+margin-top: 20px;
+border: 1px solid #e6e9ff;
+color: var(--text-color);
+font-size: 0.95em;
+line-height: 1.7;
+white-space: pre-wrap; / Ensure text wraps /
+word-break: break-word; / Break long words */
+}
+
+.result-box strong {
+color: var(--primary-color);
+font-family: 'Montserrat', sans-serif;
+font-weight: 600;
+font-size: 1.1em;
+}
+
+/* Responsive adjustments /
+@media (max-width: 768px) {
+body {
+padding: 15px;
+}
+.card-container {
+flex-direction: column; / Stack cards vertically on small screens /
+gap: 15px;
+}
+.card {
+padding: 20px;
+min-width: unset; / Remove min-width for stacking */
+}
+.card h2 {
+font-size: 1.6em;
+}
+select, input, button {
+padding: 10px 12px;
+font-size: 0.95em;
+}
+.result-box {
+padding: 15px;
+font-size: 0.9em;
+}
+}
+
+@media (max-width: 480px) {
+body {
+padding: 10px;
+}
+.card h2 {
+font-size: 1.4em;
+}
+.result-box {
+padding: 12px;
+}
+}
 </style>
+
 </head>
 <body>
+<div class="card-container">
 <div class="card">
 <h2>Fresh Daily Horoscope</h2>
 <select id="sign">
 <option value="">-- Choose your sign --</option>
 </select>
 <button id="getHor">Get Horoscope</button>
-<div id="horResult"></div>
-<hr />
+<div id="horResult" class="result-box"></div>
+</div>
+
+<div class="card">
 <h2>Love Compatibility</h2>
 <select id="sign1"></select>
 <select id="sign2"></select>
 <button id="getComp">Check Compatibility</button>
-<div id="compResult"></div>
+<div id="compResult" class="result-box"></div>
 </div>
-
+</div>
 
 <script>
 const SIGNS = ['aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius','capricorn','aquarius','pisces'];
 const sel = id => document.getElementById(id);
+
 function populate(id){
 const s = sel(id);
 s.innerHTML = '<option value="">-- choose --</option>' + SIGNS.map(z=>`<option value="${z}">${z.charAt(0).toUpperCase()+z.slice(1)}</option>`).join('');
 }
-populate('sign'); populate('sign1'); populate('sign2');
+populate('sign');
+populate('sign1');
+populate('sign2');
 
 
 async function api(path){
 const res = await fetch(path);
-if(!res.ok) throw await res.json();
+if(!res.ok) {
+const errorData = await res.json();
+throw new Error(errorData.error || `API error: ${res.status}`);
+}
 return res.json();
 }
 
 
 sel('getHor').addEventListener('click', async ()=>{
 const sign = sel('sign').value;
-if(!sign) { sel('horResult').innerText = 'Choose a sign.'; return; }
-sel('horResult').innerText = 'Loading...';
+const horResultDiv = sel('horResult');
+if(!sign) {
+horResultDiv.innerHTML = '<p style="color:red;">Please choose a zodiac sign.</p>';
+return;
+}
+horResultDiv.innerHTML = '<p>Loading today\'s horoscope...</p>';
 try{
 const data = await api('/api/horoscope?sign='+encodeURIComponent(sign));
-sel('horResult').innerHTML = `<pre><strong>${data.sign.toUpperCase()}</strong> — ${new Date(data.generated_at).toLocaleString()}\n\n${data.text}\n\nMood: ${data.mood}</pre>`;
-}catch(e){ sel('horResult').innerText = e.error || JSON.stringify(e); }
+horResultDiv.innerHTML = `
+<p>
+<strong>${data.sign.toUpperCase()}</strong> — <small>${new Date(data.generated_at).toLocaleString()}</small><br><br>
+${data.text}<br><br>
+<span style="font-weight:600;">Mood:</span> ${data.mood}
+</p>
+`;
+}catch(e){
+horResultDiv.innerHTML = `<p style="color:red;">Error: ${e.message || 'Failed to fetch horoscope.'}</p>`;
+}
 });
 
 
 sel('getComp').addEventListener('click', async ()=>{
-const s1 = sel('sign1').value; const s2 = sel('sign2').value;
-if(!s1 || !s2){ sel('compResult').innerText = 'Choose both signs.'; return; }
-sel('compResult').innerText = 'Checking...';
+const s1 = sel('sign1').value;
+const s2 = sel('sign2').value;
+const compResultDiv = sel('compResult');
+if(!s1 || !s2){
+compResultDiv.innerHTML = '<p style="color:red;">Please choose both zodiac signs for compatibility.</p>';
+return;
+}
+compResultDiv.innerHTML = '<p>Checking compatibility...</p>';
 try{
 const data = await api(`/api/compatibility?sign1=${encodeURIComponent(s1)}&sign2=${encodeURIComponent(s2)}`);
-sel('compResult').innerHTML = `<pre>${data.sign1.toUpperCase()} + ${data.sign2.toUpperCase()}\nScore: ${data.score}/100\n${data.description}</pre>`;
-}catch(e){ sel('compResult').innerText = e.error || JSON.stringify(e); }
+compResultDiv.innerHTML = `
+<p>
+<strong>${data.sign1.toUpperCase()} + ${data.sign2.toUpperCase()}</strong><br>
+<span style="font-size:1.2em; font-weight:bold; color:var(--primary-color);">Score: ${data.score}/100</span><br><br>
+${data.description}
+</p>
+`;
+}catch(e){
+compResultDiv.innerHTML = `<p style="color:red;">Error: ${e.message || 'Failed to check compatibility.'}</p>`;
+}
 });
 </script>
+
 </body>
 </html>
