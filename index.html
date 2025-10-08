@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Horoscope + Love Compatibility</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:24px;background:#f7f7fb}
+.card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,50,0.06);max-width:760px;margin:auto}
+select,input,button{padding:8px 10px;margin:6px 0;border-radius:8px;border:1px solid #ddd}
+pre{white-space:pre-wrap;background:#f2f4ff;padding:12px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>Fresh Daily Horoscope</h2>
+<select id="sign">
+<option value="">-- Choose your sign --</option>
+</select>
+<button id="getHor">Get Horoscope</button>
+<div id="horResult"></div>
+<hr />
+<h2>Love Compatibility</h2>
+<select id="sign1"></select>
+<select id="sign2"></select>
+<button id="getComp">Check Compatibility</button>
+<div id="compResult"></div>
+</div>
+
+
+<script>
+const SIGNS = ['aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius','capricorn','aquarius','pisces'];
+const sel = id => document.getElementById(id);
+function populate(id){
+const s = sel(id);
+s.innerHTML = '<option value="">-- choose --</option>' + SIGNS.map(z=>`<option value="${z}">${z.charAt(0).toUpperCase()+z.slice(1)}</option>`).join('');
+}
+populate('sign'); populate('sign1'); populate('sign2');
+
+
+async function api(path){
+const res = await fetch(path);
+if(!res.ok) throw await res.json();
+return res.json();
+}
+
+
+sel('getHor').addEventListener('click', async ()=>{
+const sign = sel('sign').value;
+if(!sign) { sel('horResult').innerText = 'Choose a sign.'; return; }
+sel('horResult').innerText = 'Loading...';
+try{
+const data = await api('/api/horoscope?sign='+encodeURIComponent(sign));
+sel('horResult').innerHTML = `<pre><strong>${data.sign.toUpperCase()}</strong> — ${new Date(data.generated_at).toLocaleString()}\n\n${data.text}\n\nMood: ${data.mood}</pre>`;
+}catch(e){ sel('horResult').innerText = e.error || JSON.stringify(e); }
+});
+
+
+sel('getComp').addEventListener('click', async ()=>{
+const s1 = sel('sign1').value; const s2 = sel('sign2').value;
+if(!s1 || !s2){ sel('compResult').innerText = 'Choose both signs.'; return; }
+sel('compResult').innerText = 'Checking...';
+try{
+const data = await api(`/api/compatibility?sign1=${encodeURIComponent(s1)}&sign2=${encodeURIComponent(s2)}`);
+sel('compResult').innerHTML = `<pre>${data.sign1.toUpperCase()} + ${data.sign2.toUpperCase()}\nScore: ${data.score}/100\n${data.description}</pre>`;
+}catch(e){ sel('compResult').innerText = e.error || JSON.stringify(e); }
+});
+</script>
+</body>
+</html>
